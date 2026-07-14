@@ -120,10 +120,12 @@
       background: var(--card);
       border-radius: 20px 20px 0 0;
       box-shadow: 0 -4px 24px rgba(0,0,0,0.12);
-      max-height: 55vh;
+      max-height: 75vh;          /* 给更多空间，避免内容被裁切 */
       display: flex;
       flex-direction: column;
       transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      padding-bottom: env(safe-area-inset-bottom, 0px);
+      overflow: hidden;          /* 防止整体溢出 */
     }
 
     .bottom-panel.collapsed {
@@ -135,15 +137,24 @@
       height: 5px;
       background: #cbd5e1;
       border-radius: 3px;
-      margin: 10px auto 6px;
+      margin: 8px auto 4px;
       cursor: pointer;
     }
 
     .panel-header {
-      padding: 0 16px 12px;
+      padding: 0 16px 8px;
       display: flex;
       align-items: center;
       justify-content: space-between;
+    }
+
+    @media (max-width: 480px) {
+      .panel-header {
+        padding: 0 16px 6px;
+      }
+      .panel-title {
+        font-size: 0.95rem;
+      }
     }
 
     .panel-title {
@@ -162,11 +173,13 @@
     /* Filters */
     .filters {
       display: flex;
-      gap: 10px;
-      padding: 0 16px 12px;
+      gap: 8px;
+      padding: 8px 16px 12px;
       overflow-x: auto;
       scrollbar-width: none;
       -webkit-overflow-scrolling: touch;
+      background: var(--card);
+      border-bottom: 1px solid var(--border);
     }
 
     .filters::-webkit-scrollbar {
@@ -175,11 +188,11 @@
 
     .filter-chip {
       flex-shrink: 0;
-      padding: 10px 18px;
-      border-radius: 24px;
+      padding: 8px 14px;
+      border-radius: 20px;
       border: 1px solid var(--border);
       background: white;
-      font-size: 0.85rem;
+      font-size: 0.8rem;
       color: var(--text-secondary);
       cursor: pointer;
       transition: all 0.2s;
@@ -188,6 +201,13 @@
       display: inline-flex;
       align-items: center;
       justify-content: center;
+    }
+
+    @media (max-width: 480px) {
+      .filter-chip {
+        padding: 6px 10px;
+        font-size: 0.75rem;
+      }
     }
 
     .filter-chip.active {
@@ -208,10 +228,11 @@
       background: #f8fafc;
       border-radius: 14px;
       padding: 14px;
-      margin-bottom: 10px;
+      margin-bottom: 12px;
       border: 1px solid var(--border);
       cursor: pointer;
       transition: all 0.2s;
+      overflow: visible;          /* 确保按钮不会被裁切 */
     }
 
     .station-card:active {
@@ -300,9 +321,9 @@
     }
 
     .btn {
-      flex: 1 1 120px;
-      min-width: 120px;
-      padding: 10px 12px;
+      flex: 1 1 140px;
+      min-width: 140px;
+      padding: 10px 14px;
       border-radius: 10px;
       border: none;
       font-size: 0.85rem;
@@ -314,6 +335,7 @@
       gap: 6px;
       transition: all 0.2s;
       white-space: nowrap;
+      min-height: 44px;
     }
 
     .btn-primary {
@@ -1110,6 +1132,347 @@
         appStore: "https://play.google.com/store/apps/details?id=com.evc.app",
         iosStore: "https://apps.apple.com/my/app/jomcharge/id1451759100",
         deepLink: "jomcharge://"
+      },
+      // Expanded coverage: More in Johor (Pagoh, Tangkak, Muar), KL, Penang, Ipoh, East Coast, Kuching (Sarawak), KK (Sabah), Singapore
+      {
+        id: 31,
+        name: "Pagoh Rest Area",
+        cpo: "ChargeSini",
+        lat: 2.1500,
+        lng: 102.7200,
+        type: "DC",
+        power: "120-180kW",
+        connectors: "CCS2",
+        status: "available",
+        address: "Pagoh Highway Rest Area, Johor",
+        price: "约 RM1.30/kWh",
+        appPackage: "com.chargesini.app",
+        appStore: "https://play.google.com/store/apps/details?id=com.chargesini.app",
+        iosStore: "https://apps.apple.com/my/app/chargesini/id6443502334",
+        deepLink: "chargesini://"
+      },
+      {
+        id: 32,
+        name: "Tangkak AEON",
+        cpo: "Gentari",
+        lat: 2.2700,
+        lng: 102.5400,
+        type: "DC",
+        power: "60-150kW",
+        connectors: "CCS2, Type2",
+        status: "available",
+        address: "AEON Tangkak, Johor",
+        price: "RM1.25+/kWh",
+        appPackage: "com.gentari.go",
+        appStore: "https://play.google.com/store/apps/details?id=com.setel.mobile",
+        iosStore: "https://apps.apple.com/my/app/setel/id1344458791",
+        deepLink: "setel://"
+      },
+      {
+        id: 33,
+        name: "Muar Shell Station",
+        cpo: "Shell",
+        lat: 2.0500,
+        lng: 102.5700,
+        type: "DC",
+        power: "180kW",
+        connectors: "CCS2",
+        status: "available",
+        address: "Shell Muar, Johor",
+        price: "通过 ParkEasy",
+        appPackage: "com.parkeasy.android",
+        appStore: "https://play.google.com/store/apps/details?id=com.parkeasy.android",
+        iosStore: "https://apps.apple.com/my/app/parkeasy/id1050000000",
+        deepLink: "parkeasy://"
+      },
+      {
+        id: 34,
+        name: "Kuching The Spring Mall",
+        cpo: "ChargeSini",
+        lat: 1.5500,
+        lng: 110.3400,
+        type: "DC",
+        power: "60-120kW",
+        connectors: "CCS2, Type2",
+        status: "available",
+        address: "The Spring Mall, Kuching, Sarawak",
+        price: "约 RM1.40/kWh",
+        appPackage: "com.chargesini.app",
+        appStore: "https://play.google.com/store/apps/details?id=com.chargesini.app",
+        iosStore: "https://apps.apple.com/my/app/chargesini/id6443502334",
+        deepLink: "chargesini://"
+      },
+      {
+        id: 35,
+        name: "Kuching Airport",
+        cpo: "JomCharge",
+        lat: 1.4850,
+        lng: 110.3400,
+        type: "DC",
+        power: "50-150kW",
+        connectors: "CCS2",
+        status: "available",
+        address: "Kuching International Airport, Sarawak",
+        price: "按分钟计费",
+        appPackage: "com.evc.app",
+        appStore: "https://play.google.com/store/apps/details?id=com.evc.app",
+        iosStore: "https://apps.apple.com/my/app/jomcharge/id1451759100",
+        deepLink: "jomcharge://"
+      },
+      {
+        id: 36,
+        name: "Kota Kinabalu Waterfront",
+        cpo: "ChargeEV",
+        lat: 5.9800,
+        lng: 116.0700,
+        type: "DC",
+        power: "60-120kW",
+        connectors: "CCS2",
+        status: "available",
+        address: "Waterfront, Kota Kinabalu, Sabah",
+        price: "时间制",
+        appPackage: "com.manjalabs.chargeev",
+        appStore: "https://play.google.com/store/apps/details?id=com.manjalabs.chargeev",
+        iosStore: "https://apps.apple.com/my/app/chargev/id1446789012",
+        deepLink: "chargev://"
+      },
+      {
+        id: 37,
+        name: "Ipoh AEON Mall",
+        cpo: "ChargeSini",
+        lat: 4.6000,
+        lng: 101.0800,
+        type: "DC",
+        power: "60-150kW",
+        connectors: "CCS2, Type2",
+        status: "available",
+        address: "AEON Ipoh, Perak",
+        price: "约 RM1.25/kWh",
+        appPackage: "com.chargesini.app",
+        appStore: "https://play.google.com/store/apps/details?id=com.chargesini.app",
+        iosStore: "https://apps.apple.com/my/app/chargesini/id6443502334",
+        deepLink: "chargesini://"
+      },
+      {
+        id: 38,
+        name: "Kuantan Teluk Cempedak",
+        cpo: "Gentari",
+        lat: 3.8100,
+        lng: 103.3700,
+        type: "DC",
+        power: "120-180kW",
+        connectors: "CCS2",
+        status: "available",
+        address: "Teluk Cempedak, Kuantan, Pahang",
+        price: "RM1.30+/kWh",
+        appPackage: "com.gentari.go",
+        appStore: "https://play.google.com/store/apps/details?id=com.setel.mobile",
+        iosStore: "https://apps.apple.com/my/app/setel/id1344458791",
+        deepLink: "setel://"
+      },
+      {
+        id: 39,
+        name: "Kota Bharu Tesco",
+        cpo: "ChargeEV",
+        lat: 6.1300,
+        lng: 102.2500,
+        type: "AC",
+        power: "22kW",
+        connectors: "Type2",
+        status: "available",
+        address: "Tesco Kota Bharu, Kelantan",
+        price: "时间制",
+        appPackage: "com.manjalabs.chargeev",
+        appStore: "https://play.google.com/store/apps/details?id=com.manjalabs.chargeev",
+        iosStore: "https://apps.apple.com/my/app/chargev/id1446789012",
+        deepLink: "chargev://"
+      },
+      {
+        id: 40,
+        name: "Singapore Marina Bay Sands",
+        cpo: "Shell",
+        lat: 1.2830,
+        lng: 103.8600,
+        type: "DC",
+        power: "150-350kW",
+        connectors: "CCS2",
+        status: "available",
+        address: "Marina Bay Sands, Singapore",
+        price: "SGD rates",
+        appPackage: "com.parkeasy.android",
+        appStore: "https://play.google.com/store/apps/details?id=com.parkeasy.android",
+        iosStore: "https://apps.apple.com/my/app/parkeasy/id1050000000",
+        deepLink: "parkeasy://"
+      },
+      {
+        id: 41,
+        name: "Singapore Changi Terminal 3",
+        cpo: "ChargeSini",
+        lat: 1.3550,
+        lng: 103.9900,
+        type: "DC",
+        power: "60-180kW",
+        connectors: "CCS2",
+        status: "available",
+        address: "Changi Airport T3, Singapore",
+        price: "SGD rates",
+        appPackage: "com.chargesini.app",
+        appStore: "https://play.google.com/store/apps/details?id=com.chargesini.app",
+        iosStore: "https://apps.apple.com/my/app/chargesini/id6443502334",
+        deepLink: "chargesini://"
+      },
+      {
+        id: 42,
+        name: "Singapore VivoCity",
+        cpo: "JomCharge",
+        lat: 1.2650,
+        lng: 103.8200,
+        type: "DC",
+        power: "50-150kW",
+        connectors: "CCS2",
+        status: "available",
+        address: "VivoCity, Singapore",
+        price: "按分钟/ kWh 计费",
+        appPackage: "com.evc.app",
+        appStore: "https://play.google.com/store/apps/details?id=com.evc.app",
+        iosStore: "https://apps.apple.com/my/app/jomcharge/id1451759100",
+        deepLink: "jomcharge://"
+      },
+      {
+        id: 43,
+        name: "KL Bangsar Village",
+        cpo: "ChargeSini",
+        lat: 3.1300,
+        lng: 101.6700,
+        type: "DC",
+        power: "60-120kW",
+        connectors: "CCS2, Type2",
+        status: "available",
+        address: "Bangsar Village, Kuala Lumpur",
+        price: "约 RM1.40/kWh",
+        appPackage: "com.chargesini.app",
+        appStore: "https://play.google.com/store/apps/details?id=com.chargesini.app",
+        iosStore: "https://apps.apple.com/my/app/chargesini/id6443502334",
+        deepLink: "chargesini://"
+      },
+      {
+        id: 44,
+        name: "KL Mont Kiara",
+        cpo: "Gentari",
+        lat: 3.1700,
+        lng: 101.6500,
+        type: "DC",
+        power: "120-180kW",
+        connectors: "CCS2",
+        status: "available",
+        address: "Mont Kiara, Kuala Lumpur",
+        price: "RM1.30+/kWh",
+        appPackage: "com.gentari.go",
+        appStore: "https://play.google.com/store/apps/details?id=com.setel.mobile",
+        iosStore: "https://apps.apple.com/my/app/setel/id1344458791",
+        deepLink: "setel://"
+      },
+      {
+        id: 45,
+        name: "Penang Gurney Drive",
+        cpo: "ChargeEV",
+        lat: 5.4400,
+        lng: 100.3100,
+        type: "DC",
+        power: "60-150kW",
+        connectors: "CCS2",
+        status: "available",
+        address: "Gurney Drive, Penang",
+        price: "时间制",
+        appPackage: "com.manjalabs.chargeev",
+        appStore: "https://play.google.com/store/apps/details?id=com.manjalabs.chargeev",
+        iosStore: "https://apps.apple.com/my/app/chargev/id1446789012",
+        deepLink: "chargev://"
+      },
+      {
+        id: 46,
+        name: "Ipoh Old Town",
+        cpo: "JomCharge",
+        lat: 4.5970,
+        lng: 101.0800,
+        type: "AC",
+        power: "22kW",
+        connectors: "Type2",
+        status: "available",
+        address: "Old Town Ipoh, Perak",
+        price: "按分钟计费",
+        appPackage: "com.evc.app",
+        appStore: "https://play.google.com/store/apps/details?id=com.evc.app",
+        iosStore: "https://apps.apple.com/my/app/jomcharge/id1451759100",
+        deepLink: "jomcharge://"
+      },
+      {
+        id: 47,
+        name: "Kuching Satok Market",
+        cpo: "Shell",
+        lat: 1.5550,
+        lng: 110.3500,
+        type: "DC",
+        power: "60-120kW",
+        connectors: "CCS2",
+        status: "available",
+        address: "Satok, Kuching, Sarawak",
+        price: "通过 ParkEasy",
+        appPackage: "com.parkeasy.android",
+        appStore: "https://play.google.com/store/apps/details?id=com.parkeasy.android",
+        iosStore: "https://apps.apple.com/my/app/parkeasy/id1050000000",
+        deepLink: "parkeasy://"
+      },
+      {
+        id: 48,
+        name: "Kota Kinabalu Airport",
+        cpo: "ChargeSini",
+        lat: 5.9300,
+        lng: 116.0500,
+        type: "DC",
+        power: "50-180kW",
+        connectors: "CCS2",
+        status: "available",
+        address: "KKIA, Kota Kinabalu, Sabah",
+        price: "约 RM1.30/kWh",
+        appPackage: "com.chargesini.app",
+        appStore: "https://play.google.com/store/apps/details?id=com.chargesini.app",
+        iosStore: "https://apps.apple.com/my/app/chargesini/id6443502334",
+        deepLink: "chargesini://"
+      },
+      {
+        id: 49,
+        name: "Singapore Woodlands Causeway",
+        cpo: "JomCharge",
+        lat: 1.4300,
+        lng: 103.7700,
+        type: "DC",
+        power: "120-180kW",
+        connectors: "CCS2",
+        status: "available",
+        address: "Woodlands, Singapore (near Causeway)",
+        price: "按分钟/ kWh 计费",
+        appPackage: "com.evc.app",
+        appStore: "https://play.google.com/store/apps/details?id=com.evc.app",
+        iosStore: "https://apps.apple.com/my/app/jomcharge/id1451759100",
+        deepLink: "jomcharge://"
+      },
+      {
+        id: 50,
+        name: "Pavilion KL (updated)",
+        cpo: "ChargeSini",
+        lat: 3.1490,
+        lng: 101.7100,
+        type: "DC",
+        power: "60-150kW",
+        connectors: "CCS2",
+        status: "available",
+        address: "Pavilion Kuala Lumpur",
+        price: "约 RM1.40/kWh",
+        appPackage: "com.chargesini.app",
+        appStore: "https://play.google.com/store/apps/details?id=com.chargesini.app",
+        iosStore: "https://apps.apple.com/my/app/chargesini/id6443502334",
+        deepLink: "chargesini://"
       }
     ];
 
@@ -1491,5 +1854,6 @@
   </script>
 </body>
 </html>
+
 
 
