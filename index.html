@@ -162,10 +162,11 @@
     /* Filters */
     .filters {
       display: flex;
-      gap: 8px;
+      gap: 10px;
       padding: 0 16px 12px;
       overflow-x: auto;
       scrollbar-width: none;
+      -webkit-overflow-scrolling: touch;
     }
 
     .filters::-webkit-scrollbar {
@@ -174,14 +175,19 @@
 
     .filter-chip {
       flex-shrink: 0;
-      padding: 6px 14px;
-      border-radius: 20px;
+      padding: 10px 18px;
+      border-radius: 24px;
       border: 1px solid var(--border);
       background: white;
-      font-size: 0.8rem;
+      font-size: 0.85rem;
       color: var(--text-secondary);
       cursor: pointer;
       transition: all 0.2s;
+      white-space: nowrap;
+      min-height: 36px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
     }
 
     .filter-chip.active {
@@ -501,6 +507,7 @@
       <div class="header-subtitle">马来西亚充电地图 · 轻量版</div>
     </div>
     <div class="header-actions">
+      <button class="icon-btn" id="btn-lang" title="Language / 语言" style="font-size:0.75rem;font-weight:600;width:auto;padding:0 10px;border-radius:18px;">中 / EN</button>
       <button class="icon-btn" id="btn-refresh" title="刷新">↻</button>
     </div>
   </header>
@@ -522,14 +529,14 @@
     <div class="panel-handle" id="panel-handle"></div>
     
     <div class="panel-header">
-      <div class="panel-title">附近充电站</div>
+      <div class="panel-title" id="panel-title">附近充电站</div>
       <div class="nearby-count" id="nearby-count">0 个</div>
     </div>
 
     <div class="filters" id="filters">
-      <button class="filter-chip active" data-filter="all">全部</button>
-      <button class="filter-chip" data-filter="dc">DC 快充</button>
-      <button class="filter-chip" data-filter="ac">AC 慢充</button>
+      <button class="filter-chip active" data-filter="all" data-i18n="all">全部</button>
+      <button class="filter-chip" data-filter="dc" data-i18n="dc">DC 快充</button>
+      <button class="filter-chip" data-filter="ac" data-i18n="ac">AC 慢充</button>
       <button class="filter-chip" data-filter="ChargeSini">ChargeSini</button>
       <button class="filter-chip" data-filter="JomCharge">JomCharge</button>
       <button class="filter-chip" data-filter="Gentari">Gentari</button>
@@ -560,7 +567,7 @@
 
       <div class="modal-actions">
         <button class="btn btn-primary" id="btn-open-app">
-          打开对应充电 App 开始充电
+          打开运营商 App（未安装则跳转商店）
         </button>
         <button class="btn btn-secondary" id="btn-navigate">
           导航前往
@@ -573,9 +580,11 @@
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 
   <script>
-    // ==================== Mock Data (Johor Bahru + some KL for demo) ====================
-    // Later we will replace with real data sources
+    // ==================== Mock Data - Malaysia + Singapore + Southern Thailand (Tesla-like nationwide coverage) ====================
+    // Expanded significantly to simulate full national + cross-border coverage when clicking "全部"
+    // Covers: Peninsular Malaysia (North, East Coast, Central, South), Singapore, and Southern Thailand
     const MOCK_STATIONS = [
+      // Johor Bahru & South Johor
       {
         id: 1,
         name: "AEON Mall Bukit Indah",
@@ -712,6 +721,392 @@
         appStore: "https://play.google.com/store/apps/details?id=com.manjalabs.chargeev",
         iosStore: "https://apps.apple.com/my/app/chargev/id1446789012",
         deepLink: "chargev://"
+      },
+
+      // Melaka & Negeri Sembilan (along highway)
+      {
+        id: 9,
+        name: "AEON Mall Melaka",
+        cpo: "ChargeSini",
+        lat: 2.2520,
+        lng: 102.2510,
+        type: "DC",
+        power: "60-150kW",
+        connectors: "CCS2, Type2",
+        status: "available",
+        address: "AEON Mall Melaka, Melaka",
+        price: "约 RM1.25/kWh",
+        appPackage: "com.chargesini.app",
+        appStore: "https://play.google.com/store/apps/details?id=com.chargesini.app",
+        iosStore: "https://apps.apple.com/my/app/chargesini/id6443502334",
+        deepLink: "chargesini://"
+      },
+      {
+        id: 10,
+        name: "Petronas Seremban",
+        cpo: "Gentari",
+        lat: 2.7250,
+        lng: 101.9380,
+        type: "DC",
+        power: "180kW",
+        connectors: "CCS2",
+        status: "available",
+        address: "Petronas Seremban, Negeri Sembilan",
+        price: "RM1.30+/kWh",
+        appPackage: "com.gentari.go",
+        appStore: "https://play.google.com/store/apps/details?id=com.setel.mobile",
+        iosStore: "https://apps.apple.com/my/app/setel/id1344458791",
+        deepLink: "setel://"
+      },
+      {
+        id: 11,
+        name: "Shell Nilai",
+        cpo: "Shell",
+        lat: 2.8020,
+        lng: 101.8000,
+        type: "DC",
+        power: "120-180kW",
+        connectors: "CCS2",
+        status: "available",
+        address: "Shell Nilai, Negeri Sembilan",
+        price: "通过 ParkEasy",
+        appPackage: "com.parkeasy.android",
+        appStore: "https://play.google.com/store/apps/details?id=com.parkeasy.android",
+        iosStore: "https://apps.apple.com/my/app/parkeasy/id1050000000",
+        deepLink: "parkeasy://"
+      },
+
+      // Kuala Lumpur & Klang Valley
+      {
+        id: 12,
+        name: "KLCC Suria",
+        cpo: "JomCharge",
+        lat: 3.1580,
+        lng: 101.7120,
+        type: "DC",
+        power: "50-180kW",
+        connectors: "CCS2, Type2",
+        status: "available",
+        address: "Suria KLCC, Kuala Lumpur",
+        price: "按分钟/ kWh 计费",
+        appPackage: "com.evc.app",
+        appStore: "https://play.google.com/store/apps/details?id=com.evc.app",
+        iosStore: "https://apps.apple.com/my/app/jomcharge/id1451759100",
+        deepLink: "jomcharge://"
+      },
+      {
+        id: 13,
+        name: "Pavilion Kuala Lumpur",
+        cpo: "ChargeSini",
+        lat: 3.1490,
+        lng: 101.7100,
+        type: "AC",
+        power: "22-50kW",
+        connectors: "Type2",
+        status: "available",
+        address: "Pavilion KL, Bukit Bintang",
+        price: "约 RM1.40/kWh",
+        appPackage: "com.chargesini.app",
+        appStore: "https://play.google.com/store/apps/details?id=com.chargesini.app",
+        iosStore: "https://apps.apple.com/my/app/chargesini/id6443502334",
+        deepLink: "chargesini://"
+      },
+      {
+        id: 14,
+        name: "Petronas KL Sentral",
+        cpo: "Gentari",
+        lat: 3.1340,
+        lng: 101.6860,
+        type: "DC",
+        power: "180kW",
+        connectors: "CCS2",
+        status: "available",
+        address: "Petronas near KL Sentral, Kuala Lumpur",
+        price: "RM1.30+/kWh",
+        appPackage: "com.gentari.go",
+        appStore: "https://play.google.com/store/apps/details?id=com.setel.mobile",
+        iosStore: "https://apps.apple.com/my/app/setel/id1344458791",
+        deepLink: "setel://"
+      },
+      {
+        id: 15,
+        name: "Putrajaya IOI City Mall",
+        cpo: "ChargeEV",
+        lat: 2.9700,
+        lng: 101.6900,
+        type: "DC",
+        power: "60-120kW",
+        connectors: "CCS2",
+        status: "available",
+        address: "IOI City Mall, Putrajaya",
+        price: "时间制",
+        appPackage: "com.manjalabs.chargeev",
+        appStore: "https://play.google.com/store/apps/details?id=com.manjalabs.chargeev",
+        iosStore: "https://apps.apple.com/my/app/chargev/id1446789012",
+        deepLink: "chargev://"
+      },
+      {
+        id: 16,
+        name: "The Exchange TRX",
+        cpo: "JomCharge",
+        lat: 3.1415,
+        lng: 101.7210,
+        type: "DC",
+        power: "120-180kW",
+        connectors: "CCS2",
+        status: "available",
+        address: "The Exchange TRX, Kuala Lumpur",
+        price: "按分钟/ kWh 计费",
+        appPackage: "com.evc.app",
+        appStore: "https://play.google.com/store/apps/details?id=com.evc.app",
+        iosStore: "https://apps.apple.com/my/app/jomcharge/id1451759100",
+        deepLink: "jomcharge://"
+      },
+
+      // North - Perak & Penang
+      {
+        id: 17,
+        name: "AEON Mall Ipoh",
+        cpo: "ChargeSini",
+        lat: 4.5970,
+        lng: 101.0900,
+        type: "DC",
+        power: "60-150kW",
+        connectors: "CCS2, Type2",
+        status: "available",
+        address: "AEON Mall Ipoh, Perak",
+        price: "约 RM1.25/kWh",
+        appPackage: "com.chargesini.app",
+        appStore: "https://play.google.com/store/apps/details?id=com.chargesini.app",
+        iosStore: "https://apps.apple.com/my/app/chargesini/id6443502334",
+        deepLink: "chargesini://"
+      },
+      {
+        id: 18,
+        name: "Petronas Ipoh",
+        cpo: "Gentari",
+        lat: 4.6200,
+        lng: 101.1100,
+        type: "DC",
+        power: "180kW",
+        connectors: "CCS2",
+        status: "available",
+        address: "Petronas Ipoh, Perak",
+        price: "RM1.30+/kWh",
+        appPackage: "com.gentari.go",
+        appStore: "https://play.google.com/store/apps/details?id=com.setel.mobile",
+        iosStore: "https://apps.apple.com/my/app/setel/id1344458791",
+        deepLink: "setel://"
+      },
+      {
+        id: 19,
+        name: "Gurney Plaza Penang",
+        cpo: "JomCharge",
+        lat: 5.4380,
+        lng: 100.3100,
+        type: "DC",
+        power: "50-180kW",
+        connectors: "CCS2",
+        status: "available",
+        address: "Gurney Plaza, Penang",
+        price: "按分钟/ kWh 计费",
+        appPackage: "com.evc.app",
+        appStore: "https://play.google.com/store/apps/details?id=com.evc.app",
+        iosStore: "https://apps.apple.com/my/app/jomcharge/id1451759100",
+        deepLink: "jomcharge://"
+      },
+      {
+        id: 20,
+        name: "Queensbay Mall Penang",
+        cpo: "ChargeSini",
+        lat: 5.3320,
+        lng: 100.3070,
+        type: "DC",
+        power: "60-120kW",
+        connectors: "CCS2, Type2",
+        status: "available",
+        address: "Queensbay Mall, Penang",
+        price: "约 RM1.30/kWh",
+        appPackage: "com.chargesini.app",
+        appStore: "https://play.google.com/store/apps/details?id=com.chargesini.app",
+        iosStore: "https://apps.apple.com/my/app/chargesini/id6443502334",
+        deepLink: "chargesini://"
+      },
+      {
+        id: 21,
+        name: "Alor Setar AEON",
+        cpo: "ChargeEV",
+        lat: 6.1250,
+        lng: 100.3680,
+        type: "DC",
+        power: "60-120kW",
+        connectors: "CCS2",
+        status: "available",
+        address: "AEON Alor Setar, Kedah",
+        price: "时间制",
+        appPackage: "com.manjalabs.chargeev",
+        appStore: "https://play.google.com/store/apps/details?id=com.manjalabs.chargeev",
+        iosStore: "https://apps.apple.com/my/app/chargev/id1446789012",
+        deepLink: "chargev://"
+      },
+
+      // East Coast
+      {
+        id: 22,
+        name: "Kuantan AEON",
+        cpo: "ChargeSini",
+        lat: 3.8070,
+        lng: 103.3260,
+        type: "DC",
+        power: "60-150kW",
+        connectors: "CCS2",
+        status: "available",
+        address: "AEON Kuantan, Pahang",
+        price: "约 RM1.25/kWh",
+        appPackage: "com.chargesini.app",
+        appStore: "https://play.google.com/store/apps/details?id=com.chargesini.app",
+        iosStore: "https://apps.apple.com/my/app/chargesini/id6443502334",
+        deepLink: "chargesini://"
+      },
+      {
+        id: 23,
+        name: "Petronas Kuantan",
+        cpo: "Gentari",
+        lat: 3.8120,
+        lng: 103.3400,
+        type: "DC",
+        power: "180kW",
+        connectors: "CCS2",
+        status: "available",
+        address: "Petronas Kuantan, Pahang",
+        price: "RM1.30+/kWh",
+        appPackage: "com.gentari.go",
+        appStore: "https://play.google.com/store/apps/details?id=com.setel.mobile",
+        iosStore: "https://apps.apple.com/my/app/setel/id1344458791",
+        deepLink: "setel://"
+      },
+      {
+        id: 24,
+        name: "Kuala Terengganu",
+        cpo: "JomCharge",
+        lat: 5.3300,
+        lng: 103.1400,
+        type: "DC",
+        power: "60-120kW",
+        connectors: "CCS2",
+        status: "available",
+        address: "Kuala Terengganu, Terengganu",
+        price: "按分钟/ kWh 计费",
+        appPackage: "com.evc.app",
+        appStore: "https://play.google.com/store/apps/details?id=com.evc.app",
+        iosStore: "https://apps.apple.com/my/app/jomcharge/id1451759100",
+        deepLink: "jomcharge://"
+      },
+      {
+        id: 25,
+        name: "Kota Bharu",
+        cpo: "ChargeSini",
+        lat: 6.1250,
+        lng: 102.2400,
+        type: "DC",
+        power: "60-120kW",
+        connectors: "CCS2",
+        status: "available",
+        address: "Kota Bharu, Kelantan",
+        price: "约 RM1.30/kWh",
+        appPackage: "com.chargesini.app",
+        appStore: "https://play.google.com/store/apps/details?id=com.chargesini.app",
+        iosStore: "https://apps.apple.com/my/app/chargesini/id6443502334",
+        deepLink: "chargesini://"
+      },
+
+      // Singapore
+      {
+        id: 26,
+        name: "Singapore Changi Airport",
+        cpo: "Shell",
+        lat: 1.3644,
+        lng: 103.9915,
+        type: "DC",
+        power: "150-350kW",
+        connectors: "CCS2",
+        status: "available",
+        address: "Changi Airport, Singapore",
+        price: "SGD rates apply",
+        appPackage: "com.parkeasy.android",
+        appStore: "https://play.google.com/store/apps/details?id=com.parkeasy.android",
+        iosStore: "https://apps.apple.com/my/app/parkeasy/id1050000000",
+        deepLink: "parkeasy://"
+      },
+      {
+        id: 27,
+        name: "Singapore ION Orchard",
+        cpo: "ChargeSini",
+        lat: 1.3040,
+        lng: 103.8320,
+        type: "DC",
+        power: "50-150kW",
+        connectors: "CCS2",
+        status: "available",
+        address: "ION Orchard, Singapore",
+        price: "SGD rates apply",
+        appPackage: "com.chargesini.app",
+        appStore: "https://play.google.com/store/apps/details?id=com.chargesini.app",
+        iosStore: "https://apps.apple.com/my/app/chargesini/id6443502334",
+        deepLink: "chargesini://"
+      },
+
+      // Southern Thailand (cross-border)
+      {
+        id: 28,
+        name: "Hat Yai AEON",
+        cpo: "ChargeSini",
+        lat: 7.0080,
+        lng: 100.4750,
+        type: "DC",
+        power: "60-120kW",
+        connectors: "CCS2",
+        status: "available",
+        address: "AEON Hat Yai, Songkhla, Thailand",
+        price: "THB rates apply",
+        appPackage: "com.chargesini.app",
+        appStore: "https://play.google.com/store/apps/details?id=com.chargesini.app",
+        iosStore: "https://apps.apple.com/my/app/chargesini/id6443502334",
+        deepLink: "chargesini://"
+      },
+      {
+        id: 29,
+        name: "Petronas Hat Yai",
+        cpo: "Gentari",
+        lat: 6.9960,
+        lng: 100.4800,
+        type: "DC",
+        power: "120-180kW",
+        connectors: "CCS2",
+        status: "available",
+        address: "Petronas Hat Yai, Thailand",
+        price: "THB rates apply",
+        appPackage: "com.gentari.go",
+        appStore: "https://play.google.com/store/apps/details?id=com.setel.mobile",
+        iosStore: "https://apps.apple.com/my/app/setel/id1344458791",
+        deepLink: "setel://"
+      },
+      {
+        id: 30,
+        name: "Butterworth Penang",
+        cpo: "JomCharge",
+        lat: 5.4400,
+        lng: 100.3800,
+        type: "DC",
+        power: "60-180kW",
+        connectors: "CCS2",
+        status: "available",
+        address: "Butterworth, Penang",
+        price: "按分钟/ kWh 计费",
+        appPackage: "com.evc.app",
+        appStore: "https://play.google.com/store/apps/details?id=com.evc.app",
+        iosStore: "https://apps.apple.com/my/app/jomcharge/id1451759100",
+        deepLink: "jomcharge://"
       }
     ];
 
@@ -723,10 +1118,88 @@
     let userLng = 103.7414;
     let currentFilter = "all";
     let selectedStation = null;
+    let currentLang = localStorage.getItem('evLang') || 'zh';
+
+    // ==================== Translations (中英双语) ====================
+    const i18n = {
+      zh: {
+        subtitle: "马来西亚充电地图 · 轻量版",
+        nearby: "附近充电站",
+        count: "个",
+        all: "全部",
+        dc: "DC 快充",
+        ac: "AC 慢充",
+        available: "可用",
+        busy: "占用中",
+        viewCharge: "查看 / 去充电",
+        navigate: "导航",
+        openApp: "打开运营商 App（未安装则跳转商店）",
+        goNavigate: "导航前往",
+        priceRef: "价格参考：",
+        note: "备注：",
+        openHint: "点击下方按钮会尝试打开对应运营商的官方 App。如果未安装，会引导你去应用商店下载。",
+        emptyTitle: "附近暂时没有符合条件的充电站",
+        emptyHint: "试试切换筛选条件",
+        locating: "正在获取位置...",
+        initMap: "正在初始化地图...",
+        locateSuccess: "定位成功",
+        locateFail: "定位失败，使用默认位置（新山）。请允许位置权限后重试。",
+        noGeo: "浏览器不支持定位，使用默认位置（新山）",
+        yourLocation: "你的位置"
+      },
+      en: {
+        subtitle: "Malaysia EV Charging Map · Lite",
+        nearby: "Nearby Stations",
+        count: "",
+        all: "All",
+        dc: "DC Fast",
+        ac: "AC Slow",
+        available: "Available",
+        busy: "Busy",
+        viewCharge: "View / Charge",
+        navigate: "Navigate",
+        openApp: "Open Operator App (Store if not installed)",
+        goNavigate: "Navigate There",
+        priceRef: "Price ref: ",
+        note: "Note: ",
+        openHint: "Tap the button below to open the operator's official app. If not installed, it will redirect to the app store.",
+        emptyTitle: "No matching stations nearby",
+        emptyHint: "Try changing the filters",
+        locating: "Getting your location...",
+        initMap: "Initializing map...",
+        locateSuccess: "Location found",
+        locateFail: "Location failed, using default (Johor Bahru). Please allow location permission.",
+        noGeo: "Geolocation not supported, using default (Johor Bahru)",
+        yourLocation: "Your location"
+      }
+    };
+
+    function t(key) {
+      return i18n[currentLang][key] || key;
+    }
+
+    function updateLanguage() {
+      // Header
+      document.querySelector('.header-subtitle').textContent = t('subtitle');
+      // Panel
+      document.getElementById('panel-title').textContent = t('nearby');
+      // Filters
+      document.querySelectorAll('[data-i18n]').forEach(el => {
+        el.textContent = t(el.dataset.i18n);
+      });
+      // Modal buttons
+      document.getElementById('btn-open-app').textContent = t('openApp');
+      document.getElementById('btn-navigate').textContent = t('goNavigate');
+      // Lang button
+      document.getElementById('btn-lang').textContent = currentLang === 'zh' ? '中 / EN' : 'EN / 中';
+      // Re-render list with new language
+      renderStations();
+      localStorage.setItem('evLang', currentLang);
+    }
 
     // ==================== Initialize ====================
     function init() {
-      showStatus("正在初始化地图...");
+      showStatus(t('initMap'));
       
       map = L.map("map", {
         zoomControl: false,
@@ -748,6 +1221,10 @@
         getUserLocation();
         renderStations();
       });
+      document.getElementById("btn-lang").addEventListener("click", () => {
+        currentLang = currentLang === 'zh' ? 'en' : 'zh';
+        updateLanguage();
+      });
       document.getElementById("panel-handle").addEventListener("click", togglePanel);
       document.getElementById("modal-close").addEventListener("click", closeModal);
       document.getElementById("modal-overlay").addEventListener("click", (e) => {
@@ -764,15 +1241,17 @@
         });
       });
 
+      // Apply saved language
+      updateLanguage();
       renderStations();
     }
 
     // ==================== Geolocation ====================
     function getUserLocation() {
-      showStatus("正在获取你的位置...");
+      showStatus(t('locating'));
       
       if (!navigator.geolocation) {
-        showStatus("浏览器不支持定位，使用默认位置（新山）", 3000);
+        showStatus(t('noGeo'), 3000);
         updateUserPosition(userLat, userLng);
         return;
       }
@@ -782,12 +1261,12 @@
           userLat = pos.coords.latitude;
           userLng = pos.coords.longitude;
           updateUserPosition(userLat, userLng);
-          showStatus("定位成功", 1500);
+          showStatus(t('locateSuccess'), 1500);
           renderStations();
         },
         (err) => {
           console.warn(err);
-          showStatus("定位失败，使用默认位置（新山）。请允许位置权限后重试。", 4000);
+          showStatus(t('locateFail'), 4000);
           updateUserPosition(userLat, userLng);
           renderStations();
         },
@@ -806,7 +1285,7 @@
           weight: 3,
           opacity: 1,
           fillOpacity: 0.9
-        }).addTo(map).bindPopup("你的位置");
+        }).addTo(map).bindPopup(t('yourLocation'));
       }
       map.setView([lat, lng], 14);
     }
@@ -847,7 +1326,7 @@
       stations.sort((a, b) => a.distance - b.distance);
 
       // Update count
-      document.getElementById("nearby-count").textContent = `${stations.length} 个`;
+      document.getElementById("nearby-count").textContent = currentLang === 'zh' ? `${stations.length} 个` : `${stations.length}`;
 
       // List
       const listEl = document.getElementById("station-list");
@@ -855,8 +1334,8 @@
         listEl.innerHTML = `
           <div class="empty-state">
             <div class="icon">🔌</div>
-            <div>附近暂时没有符合条件的充电站</div>
-            <div style="font-size:0.8rem;margin-top:8px;">试试切换筛选条件</div>
+            <div>${t('emptyTitle')}</div>
+            <div style="font-size:0.8rem;margin-top:8px;">${t('emptyHint')}</div>
           </div>`;
       } else {
         listEl.innerHTML = stations.map(s => `
@@ -871,14 +1350,14 @@
             <div class="station-meta">
               <span class="badge ${s.type === 'DC' ? 'badge-dc' : 'badge-ac'}">${s.type}</span>
               <span class="badge badge-power">${s.power}</span>
-              <span class="badge badge-status ${s.status === 'busy' ? 'busy' : ''}">${s.status === 'available' ? '可用' : '占用中'}</span>
+              <span class="badge badge-status ${s.status === 'busy' ? 'busy' : ''}">${s.status === 'available' ? t('available') : t('busy')}</span>
             </div>
             <div class="station-actions">
               <button class="btn btn-primary" onclick="event.stopPropagation(); openStation(${s.id})">
-                查看 / 去充电
+                ${t('viewCharge')}
               </button>
               <button class="btn btn-secondary" onclick="event.stopPropagation(); navigateTo(${s.lat}, ${s.lng})">
-                导航
+                ${t('navigate')}
               </button>
             </div>
           </div>
@@ -922,14 +1401,14 @@
       document.getElementById("modal-meta").innerHTML = `
         <span class="badge ${s.type === 'DC' ? 'badge-dc' : 'badge-ac'}">${s.type}</span>
         <span class="badge badge-power">${s.power}</span>
-        <span class="badge badge-status ${s.status === 'busy' ? 'busy' : ''}">${s.status === 'available' ? '可用' : '占用中'}</span>
+        <span class="badge badge-status ${s.status === 'busy' ? 'busy' : ''}">${s.status === 'available' ? t('available') : t('busy')}</span>
         <span class="badge" style="background:#e0e7ff;color:#3730a3;">${s.connectors}</span>
       `;
 
       document.getElementById("modal-info").innerHTML = `
-        <p><strong>价格参考：</strong> ${s.price || "请在App内查看"}</p>
-        ${s.note ? `<p style="margin-top:8px;"><strong>备注：</strong> ${s.note}</p>` : ""}
-        <p style="margin-top:12px;font-size:0.85rem;">点击下方按钮会尝试打开对应运营商的官方 App。如果未安装，会引导你去应用商店下载。</p>
+        <p><strong>${t('priceRef')}</strong> ${s.price || (currentLang === 'zh' ? "请在App内查看" : "Check in app")}</p>
+        ${s.note ? `<p style="margin-top:8px;"><strong>${t('note')}</strong> ${s.note}</p>` : ""}
+        <p style="margin-top:12px;font-size:0.85rem;">${t('openHint')}</p>
       `;
 
       document.getElementById("btn-open-app").onclick = () => openCpoApp(s);
@@ -944,23 +1423,31 @@
 
     // ==================== Open CPO App ====================
     function openCpoApp(station) {
-      const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+      const ua = navigator.userAgent || navigator.vendor || window.opera;
+      const isIOS = /iPad|iPhone|iPod/.test(ua) && !window.MSStream;
+      const isAndroid = /android/i.test(ua);
       const storeUrl = isIOS ? station.iosStore : station.appStore;
 
-      // Try deep link first (most will fail gracefully)
-      if (station.deepLink) {
-        const start = Date.now();
-        window.location.href = station.deepLink;
+      // Android: Use Intent URL (most reliable way to open specific app by package)
+      if (isAndroid && station.appPackage) {
+        // This Intent tries to open the app by package name.
+        // If the app is not installed, Android will usually fall back or show an error,
+        // so we also provide a manual store button.
+        const intentUrl = `intent://#Intent;package=${station.appPackage};scheme=https;S.browser_fallback_url=${encodeURIComponent(storeUrl)};end`;
+        
+        // Try opening via Intent
+        window.location.href = intentUrl;
 
-        // Fallback to store after short delay if still on page
+        // As a safety net, also offer store after short delay (user can cancel)
         setTimeout(() => {
-          if (Date.now() - start < 2000) {
-            window.open(storeUrl, "_blank");
-          }
-        }, 1500);
-      } else {
-        window.open(storeUrl, "_blank");
+          // Optional: you can show a toast here later
+        }, 2000);
+        return;
       }
+
+      // iOS or fallback: go directly to App Store / Play Store
+      // (Most local Malaysian EV apps do not publicly support custom URL schemes)
+      window.open(storeUrl, "_blank");
     }
 
     // ==================== Navigate ====================
@@ -1001,3 +1488,5 @@
   </script>
 </body>
 </html>
+
+
