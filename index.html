@@ -612,10 +612,57 @@
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 
   <script>
-    // ==================== Mock Data - Malaysia + Singapore + Southern Thailand (Tesla-like nationwide coverage) ====================
-    // Expanded significantly to simulate full national + cross-border coverage when clicking "全部"
-    // Covers: Peninsular Malaysia (North, East Coast, Central, South), Singapore, and Southern Thailand
-    const MOCK_STATIONS = [
+    // ==================== Supabase Configuration ====================
+    const SUPABASE_URL = 'https://iswfjreikykqxpngscza.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imlzd2ZqcmVpa3lrcXhwbmdzY3phIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQwNTk1NjEsImV4cCI6MjA5OTYzNTU2MX0.stmNjDNV4iXEzu02MO3eClP2wyXE-x0Xbp4IOHVGj2s';
+
+    let stations = []; // Data loaded from Supabase (single source of truth)
+
+    // ==================== Fetch from Supabase ====================
+    async function loadStationsFromSupabase() {
+      try {
+        const response = await fetch(`${SUPABASE_URL}/rest/v1/charging_stations?select=*`, {
+          headers: {
+            'apikey': SUPABASE_ANON_KEY,
+            'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+          }
+        });
+
+        if (!response.ok) throw new Error('Failed to fetch from Supabase');
+
+        const data = await response.json();
+        stations = data.map(s => ({
+          ...s,
+          // Ensure we have the fields the frontend expects
+          id: s.id,
+          name: s.name,
+          cpo: s.cpo,
+          lat: parseFloat(s.lat),
+          lng: parseFloat(s.lng),
+          type: s.type,
+          power: s.power,
+          connectors: s.connectors,
+          status: s.status || 'available',
+          address: s.address,
+          price: s.price,
+          appPackage: s.app_package,
+          appStore: s.app_store_url,
+          iosStore: s.ios_store_url,
+          deepLink: s.deep_link
+        }));
+
+        console.log(`[Supabase] Loaded ${stations.length} stations`);
+        return true;
+      } catch (error) {
+        console.error('[Supabase] Fetch failed, using fallback data:', error);
+        // Use fallback if Supabase fails
+        stations = FALLBACK_STATIONS.map(s => ({...s}));
+        return false;
+      }
+    }
+
+    // Fallback data only used if Supabase fetch completely fails
+    const FALLBACK_STATIONS = [
       // Johor Bahru & South Johor
       {
         id: 1,
@@ -2323,7 +2370,11 @@
 
       // Apply saved language
       updateLanguage();
-      renderStations();
+
+      // Load data from Supabase first, then render
+      loadStationsFromSupabase().then(() => {
+        renderStations();
+      });
     }
 
     // ==================== Geolocation ====================
@@ -2388,22 +2439,28 @@
       stationMarkers.forEach(m => map.removeLayer(m));
       stationMarkers = [];
 
-      let stations = MOCK_STATIONS.map(s => ({
-        ...s,
-        distance: getDistance(userLat, userLng, s.lat, s.lng)
-      }));
+      // Use Supabase data if available, otherwise fallback
+      let displayStations = (stations && stations.length > 0) 
+        ? stations.map(s => ({
+            ...s,
+            distance: getDistance(userLat, userLng, s.lat, s.lng)
+          }))
+        : FALLBACK_STATIONS.map(s => ({
+            ...s,
+            distance: getDistance(userLat, userLng, s.lat, s.lng)
+          }));
 
       // Filter
       if (currentFilter === "dc") {
-        stations = stations.filter(s => s.type === "DC");
+        displayStations = displayStations.filter(s => s.type === "DC");
       } else if (currentFilter === "ac") {
-        stations = stations.filter(s => s.type === "AC");
+        displayStations = displayStations.filter(s => s.type === "AC");
       } else if (currentFilter !== "all") {
-        stations = stations.filter(s => s.cpo === currentFilter);
+        displayStations = displayStations.filter(s => s.cpo === currentFilter);
       }
 
       // Sort by distance
-      stations.sort((a, b) => a.distance - b.distance);
+      displayStations.sort((a, b) => a.distance - b.distance);
 
       // Update count (if element exists)
       const countEl = document.getElementById("nearby-count");
@@ -2471,7 +2528,7 @@
 
     // ==================== Open Station Detail ====================
     function openStation(id) {
-      const s = MOCK_STATIONS.find(st => st.id === id);
+      const s = stations.find(st => st.id === id);
       if (!s) return;
       selectedStation = s;
 
@@ -2572,21 +2629,21 @@
     }
 
     // ==================== Service Worker Registration (PWA) - Safe version for sandboxed contexts ====================
-if ('serviceWorker' in navigator) {
-  try {
-    window.addEventListener('load', () => {
-      navigator.serviceWorker.register('./sw.js')
-        .then((registration) => {
-          console.log('[PWA] Service Worker registered:', registration.scope);
-        })
-        .catch((err) => {
-          console.warn('[PWA] Service Worker registration failed:', err);
+    if ('serviceWorker' in navigator) {
+      try {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('./sw.js')
+            .then((registration) => {
+              console.log('[PWA] Service Worker registered:', registration.scope);
+            })
+            .catch((err) => {
+              console.warn('[PWA] Service Worker registration failed:', err);
+            });
         });
-    });
-  } catch (e) {
-    console.warn('[PWA] Service Worker not available in this sandboxed context');
-  }
-}
+      } catch (e) {
+        console.warn('[PWA] Service Worker not available in this sandboxed context');
+      }
+    }
 
     // Start
     init();
