@@ -2538,10 +2538,27 @@
     }
 
     // ==================== Navigate ====================
-    function navigateTo(lat, lng) {
-      const url = `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}&travelmode=driving`;
-      window.open(url, "_blank");
-    }
+    function navigateTo(lat, lng, stationName = '') {
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const originLat = position.coords.latitude;
+        const originLng = position.coords.longitude;
+        
+        const url = `https://www.google.com/maps/dir/?api=1&origin=${originLat},${originLng}&destination=${lat},${lng}&travelmode=driving`;
+        window.open(url, "_blank");
+      },
+      () => {
+        // 用户没授权位置权限时的 fallback
+        const url = `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}&travelmode=driving`;
+        window.open(url, "_blank");
+      }
+    );
+  } else {
+    const url = `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}&travelmode=driving`;
+    window.open(url, "_blank");
+  }
+}
 
     // ==================== UI Helpers ====================
     function showStatus(text, duration = 0) {
