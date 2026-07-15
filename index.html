@@ -2346,13 +2346,16 @@
         const listContainer = document.getElementById("list-station-list");
 
         overlay.style.display = 'flex';
-        listContainer.innerHTML = `<div style="padding:40px;text-align:center;color:#64748b;">正在从 Supabase 加载充电站数据...</div>`;
 
-        // 确保数据已从 Supabase 加载
-        if (!stations || stations.length === 0) {
-          await loadStationsFromSupabase();
+        // 如果数据已经加载好了，就直接渲染（快速）
+        if (stations && stations.length > 0) {
+          renderStations();
+          return;
         }
 
+        // 否则显示加载中，并去加载
+        listContainer.innerHTML = `<div style="padding:40px;text-align:center;color:#64748b;">正在从 Supabase 加载充电站数据...</div>`;
+        await loadStationsFromSupabase();
         renderStations();
       });
       document.getElementById("list-modal-close").addEventListener("click", () => {
@@ -2449,12 +2452,12 @@
       stationMarkers.forEach(m => map.removeLayer(m));
       stationMarkers = [];
 
-      // 优先使用 Supabase 数据
-      let sourceData = (stations && stations.length > 0) ? stations : FALLBACK_STATIONS;
+      // 优先使用 Supabase 数据，否则用 fallback
+      const sourceData = (stations && stations.length > 0) ? stations : FALLBACK_STATIONS;
 
       let displayStations = sourceData.map(s => ({
         ...s,
-        distance: getDistance(userLat, userLng, parseFloat(s.lat), parseFloat(s.lng))
+        distance: getDistance(userLat, userLng, parseFloat(s.lat || 0), parseFloat(s.lng || 0))
       }));
 
       // Filter
