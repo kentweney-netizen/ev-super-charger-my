@@ -2539,27 +2539,27 @@
 
     // ==================== Navigate ====================
     function navigateTo(lat, lng) {
-  const destination = `${lat},${lng}`;
+      const destination = `${lat},${lng}`;
 
-  if (navigator.geolocation) {
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        const originLat = position.coords.latitude;
-        const originLng = position.coords.longitude;
-        const url = `https://www.google.com/maps/dir/?api=1&origin=${originLat},${originLng}&destination=${destination}&travelmode=driving`;
-        window.open(url, "_blank");
-      },
-      () => {
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          (position) => {
+            const originLat = position.coords.latitude;
+            const originLng = position.coords.longitude;
+            const url = `https://www.google.com/maps/dir/?api=1&origin=${originLat},${originLng}&destination=${destination}&travelmode=driving`;
+            window.open(url, "_blank");
+          },
+          () => {
+            const url = `https://www.google.com/maps/dir/?api=1&destination=${destination}&travelmode=driving`;
+            window.open(url, "_blank");
+          },
+          { enableHighAccuracy: true, timeout: 8000 }
+        );
+      } else {
         const url = `https://www.google.com/maps/dir/?api=1&destination=${destination}&travelmode=driving`;
         window.open(url, "_blank");
-      },
-      { enableHighAccuracy: true, timeout: 8000 }
-    );
-  } else {
-    const url = `https://www.google.com/maps/dir/?api=1&destination=${destination}&travelmode=driving`;
-    window.open(url, "_blank");
-  }
-}
+      }
+    }
 
     // ==================== UI Helpers ====================
     function showStatus(text, duration = 0) {
@@ -2571,22 +2571,22 @@
       }
     }
 
-    // ==================== Service Worker Registration (PWA) ====================
-    try {
-      if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-          navigator.serviceWorker.register('./sw.js')
-            .then((registration) => {
-              console.log('[PWA] Service Worker registered:', registration.scope);
-            })
-            .catch((err) => {
-              console.warn('[PWA] Service Worker registration failed:', err);
-            });
+    // ==================== Service Worker Registration (PWA) - Safe version for sandboxed contexts ====================
+if ('serviceWorker' in navigator) {
+  try {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('./sw.js')
+        .then((registration) => {
+          console.log('[PWA] Service Worker registered:', registration.scope);
+        })
+        .catch((err) => {
+          console.warn('[PWA] Service Worker registration failed:', err);
         });
-      }
-    } catch (e) {
-      console.warn('Service Worker not available in this context');
-    }
+    });
+  } catch (e) {
+    console.warn('[PWA] Service Worker not available in this sandboxed context');
+  }
+}
 
     // Start
     init();
