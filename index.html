@@ -2322,8 +2322,14 @@
         attributionControl: false
       }).setView([userLat, userLng], 13);
 
-      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-        maxZoom: 19,
+      // Mapbox tiles (closer visual style to Google Maps)
+      L.tileLayer('https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token={accessToken}', {
+        attribution: '© <a href="https://www.mapbox.com/about/maps/">Mapbox</a> © <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+        tileSize: 512,
+        maxZoom: 18,
+        zoomOffset: -1,
+        id: 'mapbox/streets-v12',
+        accessToken: 'pk.eyJ1Ijoic3VwZXItZXYtY2hhcmdlciIsImEiOiJjbXJvajVsYXgzY3J4MndxempmejE5c2lqIn0.s0YDhebSUu3wpVabEH4IFA'
       }).addTo(map);
 
       L.control.zoom({ position: "bottomright" }).addTo(map);
@@ -2660,3 +2666,4 @@
   </script>
 </body>
 </html>
+
