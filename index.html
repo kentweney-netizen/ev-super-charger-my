@@ -2484,7 +2484,7 @@
 
       // List
       const listEl = document.getElementById("list-station-list") || document.getElementById("station-list");
-      if (stations.length === 0) {
+      if (displayStations.length === 0) {
         listEl.innerHTML = `
           <div class="empty-state">
             <div class="icon">🔌</div>
@@ -2492,7 +2492,7 @@
             <div style="font-size:0.8rem;margin-top:8px;">${t('emptyHint')}</div>
           </div>`;
       } else {
-        listEl.innerHTML = stations.map(s => `
+        listEl.innerHTML = displayStations.map(s => `
           <div class="station-card" data-id="${s.id}">
             <div class="station-top">
               <div>
@@ -2523,8 +2523,8 @@
         });
       }
 
-      // Markers
-      stations.forEach(s => {
+      // Markers (use filtered + distance-calculated list)
+      displayStations.forEach(s => {
         const isDC = s.type === "DC";
         const icon = L.divIcon({
           className: "",
@@ -2666,4 +2666,3 @@
   </script>
 </body>
 </html>
-
